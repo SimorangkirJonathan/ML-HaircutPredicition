@@ -1,0 +1,5 @@
+0: Straight
+1: Wavy
+2: curly
+3: dreadlocks
+4: kinky
