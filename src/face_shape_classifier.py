@@ -1,26 +1,30 @@
 """
-Improved Face shape classifier using multiple facial ratios and landmarks.
+Improved Face shape classifier with Diamond shape and better detection.
 """
 import numpy as np
 
 
 class FaceShapeClassifier:
-    """Classify face shape based on facial measurements with improved accuracy."""
+    """Classify face shape based on facial measurements."""
     
-    # Face shape categories
+    # Face shape categories - NOW INCLUDING DIAMOND
     OVAL = "Oval"
     ROUND = "Round"
     SQUARE = "Square"
     HEART = "Heart"
     OBLONG = "Oblong"
+    DIAMOND = "Diamond"  # NEW: Added Diamond face shape
     
     def classify(self, measurements):
         """Classify face shape based on measurements.
         
-        Uses multiple ratios for more accurate classification:
-        - Length to Width ratio: how elongated the face is
-        - Forehead to Jaw ratio: wider forehead = heart, wider jaw = square
-        - Jaw to Face ratio: how prominent the jaw is
+        Face shapes and their characteristics:
+        - OVAL: Length 1.5x width, balanced proportions
+        - ROUND: Length ≈ width, soft features
+        - SQUARE: Strong jaw, angular, width ≈ length
+        - HEART: Wide forehead, narrow chin
+        - OBLONG: Very long face, narrow
+        - DIAMOND: Wide cheekbones, narrow forehead AND narrow jaw
         """
         ratio = measurements.get('length_to_width_ratio', 1.0)
         forehead_jaw = measurements.get('forehead_to_jaw_ratio', 1.0)
@@ -32,18 +36,52 @@ class FaceShapeClassifier:
             self.ROUND: 0,
             self.SQUARE: 0,
             self.HEART: 0,
-            self.OBLONG: 0
+            self.OBLONG: 0,
+            self.DIAMOND: 0
         }
         
-        # === OBLONG: Very long face (ratio > 1.5) ===
-        if ratio > 1.55:
-            scores[self.OBLONG] += 50
-        elif ratio > 1.4:
-            scores[self.OBLONG] += 30
-        elif ratio > 1.3:
-            scores[self.OBLONG] += 15
+        # ============================================
+        # DIAMOND: Wide cheekbones, narrow forehead AND narrow jaw
+        # Cheekbones are the widest part of face
+        # Both forehead and jaw are narrower than cheekbones
+        # ============================================
+        if jaw_face < 0.75:  # Narrow jaw compared to face width
+            scores[self.DIAMOND] += 25
+        if jaw_face < 0.65:
+            scores[self.DIAMOND] += 20
         
-        # === ROUND: Short face, wide (ratio < 1.2) ===
+        # Diamond has somewhat balanced forehead/jaw (both are narrow)
+        if 0.85 < forehead_jaw < 1.15:  # Forehead ≈ Jaw width
+            if jaw_face < 0.75:  # But both narrow compared to cheeks
+                scores[self.DIAMOND] += 30
+        
+        # Diamond usually has longer face
+        if 1.3 < ratio < 1.6:
+            scores[self.DIAMOND] += 15
+        
+        # ============================================
+        # HEART: Wide forehead, narrow jaw/chin
+        # ============================================
+        if forehead_jaw > 1.25:
+            scores[self.HEART] += 45
+        elif forehead_jaw > 1.15:
+            scores[self.HEART] += 30
+        elif forehead_jaw > 1.08:
+            scores[self.HEART] += 15
+        
+        # ============================================
+        # OBLONG: Very long face (ratio > 1.5)
+        # ============================================
+        if ratio > 1.6:
+            scores[self.OBLONG] += 50
+        elif ratio > 1.5:
+            scores[self.OBLONG] += 35
+        elif ratio > 1.4:
+            scores[self.OBLONG] += 20
+        
+        # ============================================
+        # ROUND: Short face, close to 1:1 ratio
+        # ============================================
         if ratio < 1.15:
             scores[self.ROUND] += 50
         elif ratio < 1.25:
@@ -51,47 +89,42 @@ class FaceShapeClassifier:
         elif ratio < 1.35:
             scores[self.ROUND] += 20
         
-        # === OVAL: Balanced proportions (ratio 1.3-1.5) ===
-        if 1.25 <= ratio <= 1.55:
-            oval_boost = 40 - abs(ratio - 1.4) * 50  # Peak at 1.4
-            scores[self.OVAL] += max(0, oval_boost)
+        # Round has soft jaw
+        if jaw_face > 0.75 and ratio < 1.3:
+            scores[self.ROUND] += 15
         
-        # === HEART: Wide forehead, narrow jaw ===
-        if forehead_jaw > 1.25:
-            scores[self.HEART] += 45
-        elif forehead_jaw > 1.15:
-            scores[self.HEART] += 30
-        elif forehead_jaw > 1.05:
-            scores[self.HEART] += 15
-        
-        # === SQUARE: Strong jaw, similar width throughout ===
-        if jaw_face > 0.82:
+        # ============================================
+        # SQUARE: Strong angular jaw, width ≈ length
+        # ============================================
+        if jaw_face > 0.85:
             scores[self.SQUARE] += 40
-        elif jaw_face > 0.75:
+        elif jaw_face > 0.78:
             scores[self.SQUARE] += 25
         
-        if 0.95 < forehead_jaw < 1.1 and jaw_face > 0.7:
+        if 0.95 < forehead_jaw < 1.1 and jaw_face > 0.75:
             scores[self.SQUARE] += 20
         
-        # === Additional modifiers ===
+        if ratio < 1.3 and jaw_face > 0.8:
+            scores[self.SQUARE] += 15
+        
+        # ============================================
+        # OVAL: Balanced proportions (ratio 1.3-1.5)
+        # ============================================
+        if 1.25 <= ratio <= 1.55:
+            oval_boost = 35 - abs(ratio - 1.4) * 40  # Peak at 1.4
+            scores[self.OVAL] += max(0, oval_boost)
         
         # Oval has balanced forehead/jaw
         if 0.95 < forehead_jaw < 1.15:
             scores[self.OVAL] += 15
         
-        # Round has soft features
-        if forehead_jaw < 1.1 and ratio < 1.3:
-            scores[self.ROUND] += 15
+        # Oval has moderate jaw
+        if 0.7 < jaw_face < 0.85:
+            scores[self.OVAL] += 10
         
-        # Oblong usually has balanced width
-        if ratio > 1.4 and 0.9 < forehead_jaw < 1.15:
-            scores[self.OBLONG] += 15
-        
-        # Heart adjustment
-        if forehead_jaw > 1.2 and ratio > 1.2:
-            scores[self.HEART] += 10
-        
+        # ============================================
         # Find winner
+        # ============================================
         max_shape = max(scores, key=scores.get)
         max_score = scores[max_shape]
         
@@ -102,11 +135,13 @@ class FaceShapeClassifier:
         else:
             confidence = 50
         
-        # Minimum confidence boost if score is high
+        # Boost confidence if score is high
         if max_score >= 50:
-            confidence = max(confidence, 70)
+            confidence = max(confidence, 75)
         elif max_score >= 40:
-            confidence = max(confidence, 60)
+            confidence = max(confidence, 65)
+        elif max_score >= 30:
+            confidence = max(confidence, 55)
         
         details = {
             'length_width_ratio': round(ratio, 3),
@@ -124,6 +159,7 @@ class FaceShapeClassifier:
             self.ROUND: "Wajah bulat - pipi penuh, butuh gaya yang menambah panjang visual",
             self.SQUARE: "Wajah kotak - rahang tegas, butuh gaya yang melunakkan sudut",
             self.HEART: "Wajah hati - dahi lebar dagu runcing, butuh keseimbangan",
-            self.OBLONG: "Wajah panjang - butuh gaya yang menambah lebar visual"
+            self.OBLONG: "Wajah panjang - butuh gaya yang menambah lebar visual",
+            self.DIAMOND: "Wajah diamond - tulang pipi lebar, dahi dan dagu sempit"
         }
         return descriptions.get(face_shape, "")

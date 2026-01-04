@@ -116,6 +116,28 @@ class HairstyleRecommender:
         ("Oblong", "Dreadlocks"): {
             "styles": ["Side Volume Locs", "Crown Wrapped Locs", "Wide Loc Style"],
             "tips": "Style locs untuk menambah width di samping."
+        },
+        
+        # Diamond face - balance cheekbones, add width to forehead/jaw
+        ("Diamond", "Straight"): {
+            "styles": ["Side Swept Fringe", "Chin Length", "Soft Layers", "Textured Crop"],
+            "tips": "Fringe membantu menambah width di dahi."
+        },
+        ("Diamond", "Wavy"): {
+            "styles": ["Wavy Fringe", "Layered Waves", "Side Part Waves"],
+            "tips": "Waves natural membantu balance tulang pipi."
+        },
+        ("Diamond", "Curly"): {
+            "styles": ["Curly Bangs", "Jaw Length Curls", "Soft Curly Layers"],
+            "tips": "Curls di dahi dan rahang balance wajah diamond."
+        },
+        ("Diamond", "Kinky"): {
+            "styles": ["Even Volume Afro", "Twist Out", "Defined Curls"],
+            "tips": "Distribusi volume merata balance cheekbones."
+        },
+        ("Diamond", "Dreadlocks"): {
+            "styles": ["Chin Length Locs", "Loc Fringe", "Half Up Half Down"],
+            "tips": "Locs yang frame wajah soften cheekbones."
         }
     }
     

@@ -90,85 +90,66 @@ class HairstyleApp:
             self.draw_text_with_bg(frame, title, (x + 10, y + 25), 0.7, self.COLOR_PRIMARY)
     
     def draw_info_panel(self, frame, face_shape, face_confidence, hair_type, hair_confidence, recommendations):
-        """Draw the information panel with results."""
+        """Draw a compact information panel with results."""
         h, w = frame.shape[:2]
-        panel_width = 350
-        panel_x = w - panel_width - 10
-        panel_y = 10
-        panel_height = h - 20
+        panel_width = 220  # Smaller width
+        panel_x = w - panel_width - 5
+        panel_y = 5
+        
+        # Calculate dynamic height based on content
+        panel_height = 200  # Compact height
+        if recommendations and 'styles' in recommendations:
+            panel_height += len(recommendations['styles'][:3]) * 18 + 40
         
         # Draw panel background
-        self.draw_panel(frame, panel_x, panel_y, panel_width, panel_height, "ANALYSIS RESULTS")
+        overlay = frame.copy()
+        cv2.rectangle(overlay, (panel_x, panel_y), (panel_x + panel_width, panel_y + panel_height), self.COLOR_BG, -1)
+        cv2.addWeighted(overlay, 0.75, frame, 0.25, 0, frame)
+        cv2.rectangle(frame, (panel_x, panel_y), (panel_x + panel_width, panel_y + panel_height), self.COLOR_PRIMARY, 1)
         
-        y_offset = panel_y + 50
+        y_offset = panel_y + 18
         
-        # Face Shape Section
-        cv2.putText(frame, "Face Shape:", (panel_x + 10, y_offset), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, self.COLOR_WARNING, 1, cv2.LINE_AA)
-        y_offset += 25
+        # Title - smaller
+        cv2.putText(frame, "RESULTS", (panel_x + 8, y_offset), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.COLOR_PRIMARY, 1, cv2.LINE_AA)
+        y_offset += 22
         
+        # Face Shape - compact
+        cv2.putText(frame, "Face:", (panel_x + 8, y_offset), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, self.COLOR_WARNING, 1, cv2.LINE_AA)
         if face_shape:
-            cv2.putText(frame, f"  {face_shape} ({face_confidence:.0f}%)", (panel_x + 10, y_offset),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, self.COLOR_SUCCESS, 2, cv2.LINE_AA)
+            cv2.putText(frame, f"{face_shape} {face_confidence:.0f}%", (panel_x + 50, y_offset),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, self.COLOR_SUCCESS, 1, cv2.LINE_AA)
         else:
-            cv2.putText(frame, "  Not detected", (panel_x + 10, y_offset),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (150, 150, 150), 1, cv2.LINE_AA)
-        y_offset += 35
-        
-        # Hair Type Section
-        cv2.putText(frame, "Hair Type:", (panel_x + 10, y_offset),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, self.COLOR_WARNING, 1, cv2.LINE_AA)
-        y_offset += 25
-        
-        if hair_type and hair_type != "Unknown":
-            cv2.putText(frame, f"  {hair_type} ({hair_confidence:.0f}%)", (panel_x + 10, y_offset),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, self.COLOR_SUCCESS, 2, cv2.LINE_AA)
-        else:
-            cv2.putText(frame, "  Not detected", (panel_x + 10, y_offset),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (150, 150, 150), 1, cv2.LINE_AA)
-        y_offset += 40
-        
-        # Divider line
-        cv2.line(frame, (panel_x + 10, y_offset), (panel_x + panel_width - 10, y_offset), 
-                 self.COLOR_PRIMARY, 1)
+            cv2.putText(frame, "---", (panel_x + 50, y_offset),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, (150, 150, 150), 1, cv2.LINE_AA)
         y_offset += 20
         
-        # Recommendations Section
-        cv2.putText(frame, "RECOMMENDED STYLES:", (panel_x + 10, y_offset),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, self.COLOR_PRIMARY, 1, cv2.LINE_AA)
-        y_offset += 30
+        # Hair Type - compact
+        cv2.putText(frame, "Hair:", (panel_x + 8, y_offset),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, self.COLOR_WARNING, 1, cv2.LINE_AA)
+        if hair_type and hair_type != "Unknown":
+            cv2.putText(frame, f"{hair_type} {hair_confidence:.0f}%", (panel_x + 50, y_offset),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, self.COLOR_SUCCESS, 1, cv2.LINE_AA)
+        else:
+            cv2.putText(frame, "---", (panel_x + 50, y_offset),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, (150, 150, 150), 1, cv2.LINE_AA)
+        y_offset += 18
+        
+        # Divider
+        cv2.line(frame, (panel_x + 5, y_offset), (panel_x + panel_width - 5, y_offset), self.COLOR_PRIMARY, 1)
+        y_offset += 15
+        
+        # Recommendations - compact
+        cv2.putText(frame, "Styles:", (panel_x + 8, y_offset),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, self.COLOR_PRIMARY, 1, cv2.LINE_AA)
+        y_offset += 18
         
         if recommendations and 'styles' in recommendations:
-            for i, style in enumerate(recommendations['styles'][:4]):  # Max 4 styles
-                cv2.putText(frame, f"  {i+1}. {style}", (panel_x + 10, y_offset),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.55, self.COLOR_TEXT, 1, cv2.LINE_AA)
-                y_offset += 25
-            
-            y_offset += 15
-            
-            # Tips
-            if 'tips' in recommendations:
-                cv2.putText(frame, "Tips:", (panel_x + 10, y_offset),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.COLOR_WARNING, 1, cv2.LINE_AA)
-                y_offset += 20
-                
-                # Word wrap tips
-                tips = recommendations['tips']
-                words = tips.split()
-                line = ""
-                for word in words:
-                    test_line = line + " " + word if line else word
-                    (tw, _), _ = cv2.getTextSize(test_line, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
-                    if tw < panel_width - 30:
-                        line = test_line
-                    else:
-                        cv2.putText(frame, line, (panel_x + 10, y_offset),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, (200, 200, 200), 1, cv2.LINE_AA)
-                        y_offset += 18
-                        line = word
-                if line:
-                    cv2.putText(frame, line, (panel_x + 10, y_offset),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.45, (200, 200, 200), 1, cv2.LINE_AA)
+            for i, style in enumerate(recommendations['styles'][:3]):  # Max 3 styles
+                cv2.putText(frame, f"{i+1}. {style}", (panel_x + 8, y_offset),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.35, self.COLOR_TEXT, 1, cv2.LINE_AA)
+                y_offset += 16
     
     def draw_help(self, frame):
         """Draw help overlay."""
@@ -245,7 +226,10 @@ class HairstyleApp:
                 
                 # Classify face shape
                 measurements = self.face_detector.get_face_measurements(landmarks)
-                face_shape, face_confidence, _ = self.face_shape_classifier.classify(measurements)
+                face_shape, face_confidence, details = self.face_shape_classifier.classify(measurements)
+                
+                # DEBUG: Print measurements to console
+                print(f"L/W: {details['length_width_ratio']:.2f}, FH/J: {details['forehead_jaw_ratio']:.2f}, J/F: {details['jaw_face_ratio']:.2f} -> {face_shape}")
                 
                 # Get hair region and classify
                 hair_region = self.face_detector.get_hair_region(frame, landmarks)
