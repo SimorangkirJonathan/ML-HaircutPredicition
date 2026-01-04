@@ -51,6 +51,44 @@ class HairstyleApp:
         self.COLOR_TEXT = (255, 255, 255)     # White
         self.COLOR_BG = (50, 50, 50)          # Dark gray
         
+        # Temporal smoothing - stabilize predictions over time
+        self.SMOOTHING_WINDOW = 15  # Average over 15 frames (~0.5 sec at 30fps)
+        self.face_shape_history = []
+        self.hair_type_history = []
+        self.face_confidence_history = []
+        self.hair_confidence_history = []
+        
+    def get_smoothed_prediction(self, history, new_value, confidence_history=None, new_conf=0):
+        """Get smoothed prediction from history using voting."""
+        if new_value is not None and new_value != "Unknown":
+            history.append(new_value)
+            if confidence_history is not None:
+                confidence_history.append(new_conf)
+        
+        # Keep only recent history
+        if len(history) > self.SMOOTHING_WINDOW:
+            history.pop(0)
+            if confidence_history is not None:
+                confidence_history.pop(0)
+        
+        if not history:
+            return None, 0
+        
+        # Vote for most common prediction
+        from collections import Counter
+        counts = Counter(history)
+        most_common = counts.most_common(1)[0]
+        smoothed_value = most_common[0]
+        vote_ratio = most_common[1] / len(history)
+        
+        # Calculate average confidence
+        if confidence_history:
+            avg_conf = sum(confidence_history) / len(confidence_history)
+        else:
+            avg_conf = vote_ratio * 100
+        
+        return smoothed_value, avg_conf
+        
     def draw_text_with_bg(self, frame, text, pos, font_scale=0.6, color=None, bg_color=None):
         """Draw text with background for better visibility."""
         if color is None:
@@ -226,19 +264,29 @@ class HairstyleApp:
                 
                 # Classify face shape
                 measurements = self.face_detector.get_face_measurements(landmarks)
-                face_shape, face_confidence, details = self.face_shape_classifier.classify(measurements)
+                raw_face_shape, raw_face_conf, details = self.face_shape_classifier.classify(measurements)
                 
-                # DEBUG: Print measurements to console
-                print(f"L/W: {details['length_width_ratio']:.2f}, FH/J: {details['forehead_jaw_ratio']:.2f}, J/F: {details['jaw_face_ratio']:.2f} -> {face_shape}")
+                # Apply temporal smoothing for stable predictions
+                face_shape, face_confidence = self.get_smoothed_prediction(
+                    self.face_shape_history, raw_face_shape,
+                    self.face_confidence_history, raw_face_conf
+                )
                 
                 # Get hair region and classify
                 hair_region = self.face_detector.get_hair_region(frame, landmarks)
                 if hair_region is not None and hair_region.size > 0:
-                    hair_type, hair_confidence, _ = self.hair_classifier.classify(hair_region)
-                    # Draw hair region after getting it
+                    raw_hair_type, raw_hair_conf, _ = self.hair_classifier.classify(hair_region)
+                    
+                    # Apply temporal smoothing
+                    hair_type, hair_confidence = self.get_smoothed_prediction(
+                        self.hair_type_history, raw_hair_type,
+                        self.hair_confidence_history, raw_hair_conf
+                    )
+                    
+                    # Draw hair region
                     self.face_detector.draw_hair_region(frame, (255, 0, 255))
                 
-                # Get recommendations
+                # Get recommendations using smoothed predictions
                 if face_shape and hair_type and hair_type != "Unknown":
                     recommendations = self.recommender.get_recommendation(face_shape, hair_type)
                 elif face_shape:
