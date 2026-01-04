@@ -1,4 +1,4 @@
-# 💇 Real-Time Hairstyle Recommendation System
+# Real-Time Hairstyle Recommendation System
 
 Sistem rekomendasi gaya rambut real-time menggunakan kamera yang mendeteksi bentuk wajah dan tipe rambut secara otomatis, kemudian memberikan rekomendasi potongan rambut yang cocok.
 
@@ -8,26 +8,26 @@ Sistem rekomendasi gaya rambut real-time menggunakan kamera yang mendeteksi bent
 
 ---
 
-## 📋 Daftar Isi
+## Daftar Isi
 
-- [Fitur](#-fitur)
-- [Teknologi](#-teknologi)
-- [Instalasi](#-instalasi)
-- [Penggunaan](#-penggunaan)
-- [Arsitektur Sistem](#-arsitektur-sistem)
-- [Dataset & Training](#-dataset--training)
-- [Struktur Proyek](#-struktur-proyek)
-- [Kontrol Aplikasi](#-kontrol-aplikasi)
-- [Troubleshooting](#-troubleshooting)
+- [Fitur](#fitur)
+- [Teknologi](#teknologi)
+- [Instalasi](#instalasi)
+- [Penggunaan](#penggunaan)
+- [Arsitektur Sistem](#arsitektur-sistem)
+- [Dataset & Training](#dataset--training)
+- [Struktur Proyek](#struktur-proyek)
+- [Kontrol Aplikasi](#kontrol-aplikasi)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
-## ✨ Fitur
+## Fitur
 
 ### Deteksi Real-Time
-- 📸 **Deteksi Wajah** - Menggunakan OpenCV Haar Cascade
-- 🎯 **68 Facial Landmarks** - OpenCV Facemark LBF untuk pengukuran akurat
-- 🔄 **Temporal Smoothing** - Prediksi stabil (rata-rata 15 frame)
+- **Deteksi Wajah** - Menggunakan OpenCV Haar Cascade
+- **68 Facial Landmarks** - OpenCV Facemark LBF untuk pengukuran akurat
+- **Temporal Smoothing** - Prediksi stabil (rata-rata 15 frame)
 
 ### Klasifikasi
 - **Face Shape Detection** (6 kategori):
@@ -37,13 +37,13 @@ Sistem rekomendasi gaya rambut real-time menggunakan kamera yang mendeteksi bent
   - Straight, Wavy, Curly, Kinky, Dreadlocks
 
 ### Rekomendasi
-- 💈 **30 Kombinasi Gaya Rambut** (6 face shapes × 5 hair types)
-- 📝 Tips styling dalam Bahasa Indonesia
-- 🎨 UI informatif dengan hasil real-time
+- **30 Kombinasi Gaya Rambut** (6 face shapes × 5 hair types)
+- Tips styling dalam Bahasa Indonesia
+- UI informatif dengan hasil real-time
 
 ---
 
-## 🛠 Teknologi
+## Teknologi
 
 | Komponen | Teknologi |
 |----------|-----------|
@@ -56,7 +56,7 @@ Sistem rekomendasi gaya rambut real-time menggunakan kamera yang mendeteksi bent
 
 ---
 
-## 📦 Instalasi
+## Instalasi
 
 ### 1. Clone Repository
 ```bash
@@ -94,14 +94,23 @@ python train_hair_model.py
 
 ---
 
-## 🚀 Penggunaan
+## Penggunaan
 
-### Jalankan Aplikasi
+### Web Interface (Streamlit) - Rekomendasi
+UI modern berbasis web dengan tampilan profesional:
+```bash
+pip install streamlit streamlit-webrtc
+streamlit run app_streamlit.py
+```
+
+Browser akan otomatis terbuka. Klik **START** untuk memulai kamera.
+
+### Classic Mode (OpenCV)
 ```bash
 python main.py
 ```
 
-### Kontrol Keyboard
+### Kontrol Keyboard (Classic Mode)
 | Tombol | Fungsi |
 |--------|--------|
 | `Q` | Keluar dari aplikasi |
@@ -109,9 +118,10 @@ python main.py
 | `L` | Toggle tampilan landmarks |
 | `H` | Toggle help overlay |
 
+
 ---
 
-## 🏗 Arsitektur Sistem
+## Arsitektur Sistem
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -162,7 +172,7 @@ python main.py
 
 ---
 
-## 📊 Dataset & Training
+## Dataset & Training
 
 ### Dataset Hair Type
 ```
@@ -204,7 +214,7 @@ Total: ~2000 images
 
 ---
 
-## 📁 Struktur Proyek
+## Struktur Proyek
 
 ```
 hairstyle-recommendation/
@@ -237,7 +247,7 @@ hairstyle-recommendation/
 
 ---
 
-## 🎮 Kontrol Aplikasi
+## Kontrol Aplikasi
 
 ### Tampilan UI
 ```
@@ -249,7 +259,7 @@ hairstyle-recommendation/
 │         │             │                 │                  │
 │         │   68 MARKS  │                 │  Styles:         │
 │         │             │                 │  1. Textured Crop│
-│         │     😊      │                 │  2. Messy Fringe │
+│         │             │                 │  2. Messy Fringe │
 │         │             │                 │  3. Natural Waves│
 │         └─────────────┘                 │                  │
 │                                         │                  │
@@ -259,15 +269,15 @@ hairstyle-recommendation/
 ```
 
 ### Landmarks Legend
-- 🔴 **Merah** - Jawline (rahang)
-- 🟡 **Kuning** - Alis
-- 🔵 **Biru** - Mata
-- 🟢 **Hijau** - Hidung
-- 🟣 **Pink** - Mulut
+- **Merah** - Jawline (rahang)
+- **Kuning** - Alis
+- **Biru** - Mata
+- **Hijau** - Hidung
+- **Pink** - Mulut
 
 ---
 
-## ❓ Troubleshooting
+## Troubleshooting
 
 ### Model tidak terload
 ```bash
@@ -292,19 +302,13 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/kurnianggoro/GSOC2017/
 
 ---
 
-## 📄 License
-
-MIT License - Silakan gunakan dan modifikasi sesuai kebutuhan.
-
----
-
-## 👨‍💻 Author
+## Author
 
 **Jonathan Simorangkir**
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - MobileNetV2 - Google Research
 - OpenCV Facemark LBF - Kok Wei Chee
